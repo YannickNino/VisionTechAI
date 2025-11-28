@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionTech - OCR GARMENT TAG</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c1e3d 0%, #1a3a6b 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #app {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            background: linear-gradient(135deg, #1a3a6b 0%, #dc2626 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name {
+            color: #1a3a6b;
+            font-weight: 600;
+        }
+
+        .btn-logout {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #2563eb;
+            border-radius: 10px;
+            padding: 60px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #eff6ff;
+        }
+
+        .upload-area:hover {
+            background: #dbeafe;
+            border-color: #1e40af;
+        }
+
+        .upload-area:hover .upload-icon {
+            color: #dc2626;
+        }
+
+        .upload-area.dragging {
+            background: #dbeafe;
+            border-color: #2563eb;
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .selected-files {
+            margin-top: 20px;
+            padding: 20px;
+            background: #eff6ff;
+            border-radius: 10px;
+        }
+
+        .file-item {
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .file-icon {
+            margin-right: 10px;
+            font-size: 1.5em;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            margin-left: 10px;
+            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
+        }
+
+        .btn-export:hover {
+            box-shadow: 0 8px 20px rgba(220, 38, 38, 0.6);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2563eb;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-header h2 {
+            color: #1e40af;
+            font-size: 1.8em;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .results-table thead {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+        }
+
+        .results-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .results-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-table tbody tr:hover {
+            background: #eff6ff;
+        }
+
+        .results-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-error {
+            background: #fee2e2;
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            border-left: 5px solid #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <div class="user-info">
+                <span class="user-name">👤 {{ userName }}</span>
+                <button @click="logout" class="btn-logout">🚪 Déconnexion</button>
+            </div>
+            <h1>🔍 VisionTech</h1>
+            <p>Extraction automatique des valeurs du document technique</p>
+        </div>
+
+        <div class="upload-section">
+            <div 
+                class="upload-area" 
+                :class="{ dragging: isDragging }"
+                @click="triggerFileInput"
+                @dragover.prevent="isDragging = true"
+                @dragleave.prevent="isDragging = false"
+                @drop.prevent="handleDrop"
+            >
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Cliquez ou glissez vos images ici</div>
+                <div class="upload-hint">Formats acceptés: PNG, JPG, JPEG, BMP, TIFF</div>
+            </div>
+            <input 
+                type="file" 
+                ref="fileInput" 
+                class="file-input" 
+                multiple 
+                accept="image/*"
+                @change="handleFileSelect"
+            >
+
+            <div v-if="selectedFiles.length > 0" class="selected-files">
+                <h3>📋 Fichiers sélectionnés ({{ selectedFiles.length }})</h3>
+                <div v-for="(file, index) in selectedFiles" :key="index" class="file-item">
+                    <span class="file-icon">🖼️</span>
+                    <span>{{ file.name }}</span>
+                </div>
+                <button @click="processImages" :disabled="processing" class="btn" style="margin-top: 20px;">
+                    {{ processing ? '⏳ Traitement en cours...' : '🚀 Traiter les images' }}
+                </button>
+            </div>
+        </div>
+
+        <div v-if="processing" class="loading">
+            <div class="spinner"></div>
+            <p>Analyse des images en cours...</p>
+        </div>
+
+        <div v-if="results.length > 0" class="results-section">
+            <div class="results-header">
+                <h2>📊 Résultats</h2>
+                <button @click="exportCSV" class="btn btn-export">💾 Exporter CSV</button>
+            </div>
+
+            <div v-if="successMessage" class="alert alert-success">
+                ✅ {{ successMessage }}
+            </div>
+
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Part</th>
+                        <th>GARMENT TAG</th>
+                        <th>Largeur</th>
+                        <th>Longueur</th>
+                        <th>Fichier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(result, index) in results" :key="index">
+                        <td><strong>{{ result.part }}</strong></td>
+                        <td>
+                            <span v-if="result.valeur !== 'Error' && result.valeur !== 'Not found'" class="badge badge-success">
+                                {{ result.valeur }}
+                            </span>
+                            <span v-else class="badge badge-error">{{ result.valeur }}</span>
+                        </td>
+                        <td>{{ result.largeur }}</td>
+                        <td>{{ result.longueur }}</td>
+                        <td style="font-size: 0.9em; color: #666;">{{ result.filename }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    selectedFiles: [],
+                    results: [],
+                    processing: false,
+                    isDragging: false,
+                    successMessage: '',
+                    apiUrl: 'http://localhost:5000/api',
+                    userName: '',
+                    token: ''
+                }
+            },
+            methods: {
+                getAuthHeaders() {
+                    return {
+                        'Authorization': `Bearer ${this.token}`
+                    };
+                },
+                triggerFileInput() {
+                    this.$refs.fileInput.click();
+                },
+                handleFileSelect(event) {
+                    this.selectedFiles = Array.from(event.target.files);
+                },
+                handleDrop(event) {
+                    this.isDragging = false;
+                    this.selectedFiles = Array.from(event.dataTransfer.files);
+                },
+                async processImages() {
+                    if (this.selectedFiles.length === 0) return;
+
+                    this.processing = true;
+                    this.results = [];
+                    this.successMessage = '';
+
+                    const formData = new FormData();
+                    this.selectedFiles.forEach(file => {
+                        formData.append('files', file);
+                    });
+
+                    try {
+                        const response = await axios.post(`${this.apiUrl}/upload`, formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                                ...this.getAuthHeaders()
+                            }
+                        });
+
+                        this.results = response.data.results;
+                        this.successMessage = `${this.results.length} images traitées avec succès!`;
+                    } catch (error) {
+                        if (error.response?.status === 401) {
+                            alert('Session expirée. Veuillez vous reconnecter.');
+                            this.logout();
+                        } else {
+                            alert('Erreur lors du traitement: ' + (error.response?.data?.error || error.message));
+                        }
+                    } finally {
+                        this.processing = false;
+                    }
+                },
+                async exportCSV() {
+                    try {
+                        const response = await axios.post(`${this.apiUrl}/export-csv`, {
+                            results: this.results
+                        }, {
+                            responseType: 'blob',
+                            headers: this.getAuthHeaders()
+                        });
+
+                        const url = window.URL.createObjectURL(new Blob([response.data]));
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.setAttribute('download', 'garment_tags_results.csv');
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+
+                        this.successMessage = 'Fichier CSV téléchargé avec succès!';
+                    } catch (error) {
+                        if (error.response?.status === 401) {
+                            alert('Session expirée. Veuillez vous reconnecter.');
+                            this.logout();
+                        } else {
+                            alert('Erreur lors de l\'export CSV: ' + error.message);
+                        }
+                    }
+                },
+                async logout() {
+                    try {
+                        await axios.post(`${this.apiUrl}/logout`, {}, {
+                            headers: this.getAuthHeaders()
+                        });
+                    } catch (error) {
+                        console.error('Erreur lors de la déconnexion:', error);
+                    } finally {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.href = '/login';
+                    }
+                }
+            },
+            mounted() {
+                // Check authentication
+                this.token = localStorage.getItem('token');
+                const userStr = localStorage.getItem('user');
+
+                if (!this.token || !userStr) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                try {
+                    const user = JSON.parse(userStr);
+                    this.userName = user.name;
+                } catch (error) {
+                    console.error('Erreur lors de la lecture des données utilisateur:', error);
+                    window.location.href = '/login';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
