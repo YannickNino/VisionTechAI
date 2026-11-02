@@ -2,20 +2,20 @@
 
 Application web moderne pour l'extraction automatique des valeurs GARMENT TAG depuis des images.
 
-## 🚀 Technologies
+##  Technologies
 
 - **Backend**: Flask (Python)
 - **Frontend**: Vue.js 3
 - **OCR**: Tesseract + pytesseract
 - **Design**: CSS moderne avec gradients
 
-## 📋 Prérequis
+##  Prérequis
 
 - Python 3.8+
 - Tesseract OCR installé (`C:\Program Files\Tesseract-OCR\tesseract.exe`)
 - Navigateur web moderne
 
-## 🛠️ Installation
+##  Installation
 
 ### 1. Installer les dépendances Python
 
@@ -43,7 +43,7 @@ python -m http.server 8080
 
 Puis accédez à `http://localhost:8080`
 
-## 🎯 Utilisation
+##  Utilisation
 
 1. **Upload d'images**
    - Cliquez ou glissez-déposez vos images
@@ -60,7 +60,7 @@ Puis accédez à `http://localhost:8080`
 4. **Export CSV**
    - Cliquez sur "Exporter CSV" pour télécharger les résultats
 
-## 📁 Structure du projet
+##  Structure du projet
 
 ```
 Projet1/
@@ -80,7 +80,7 @@ Projet1/
 - `POST /api/upload` - Upload et traitement des images
 - `POST /api/export-csv` - Export CSV des résultats
 
-## 🎨 Fonctionnalités
+##  Fonctionnalités
 
 - ✅ Upload multiple d'images (drag & drop)
 - ✅ Traitement OCR automatique avec recadrage intelligent
@@ -90,13 +90,13 @@ Projet1/
 - ✅ Gestion des erreurs
 - ✅ Extraction de: Part, Valeur GARMENT TAG, Dimensions
 
-## 📝 Notes
+##  Notes
 
 - Les images sont temporairement stockées dans `backend/uploads/`
 - Le recadrage automatique améliore la précision OCR
 - Les patterns regex capturent différents formats (10 X GARMENT TAG, 7X*GARMENT TAG, etc.)
 
-## 🐛 Dépannage
+##  Dépannage
 
 **Problème**: Tesseract non trouvé
 - Vérifiez l'installation de Tesseract
